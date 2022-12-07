@@ -3,89 +3,94 @@ export default class ColumnChart {
 
   constructor({
     data = [],
-    label = '',
-    link = '#',
-    value = 0,
-    formatHeading = false
+    label = "",
+    value = "",
+    link = "",
+    formatHeading = (data) => data,
   } = {}) {
     this.data = data;
     this.label = label;
     this.link = link;
+    this.value = formatHeading(value.toLocaleString("en-EN"));
 
-    this.isFormatHeading = formatHeading;
-    this.value = this.getFormatHeading(value)
-
-    this.columnProps = this.getColumnProps();
-    this.isEmpty = (arguments.length === 0);
-
-    this.render()
-  }
-
-  getFormatHeading(item) {
-    item = item.toLocaleString('en-EN')
-    if (this.isFormatHeading) {
-      item = this.isFormatHeading(item)
-    }
-    return item
+    this.render();
   }
 
   getColumnProps() {
+    if (!this.data.length) return [];
+
+    if (this.element) {
+      this.element.classList.remove("column-chart_loading");
+    }
+
     const maxValue = Math.max(...this.data);
     const scale = this.chartHeight / maxValue;
 
-    return this.data.map(item => {
-      return {
-        percent: (item / maxValue * 100).toFixed(0) + '%',
-        value: String(Math.floor(item * scale))
-      };
-    });
-  }
-
-
-  spellingData() {
-    return this.columnProps
-      .map(({ value, percent }) => {
-        return `<div style="--value: ${value}" data-tooltip="${percent}"></div>`
+    return this.data
+      .map((item) => {
+        const percent = ((item / maxValue) * 100).toFixed(0);
+        const value = String(Math.floor(item * scale));
+        return `<div style="--value: ${value}" data-tooltip="${percent}%"></div>`;
       })
-      .join('')
+      .join("");
   }
-
 
   getTemplate() {
     return `
-      <div class="dashboard__chart_${this.label} ${this.isEmpty ? 'column-chart_loading' : ''}">
-        <div class="column-chart" style="--chart-height: 50">
+        <div class="column-chart column-chart_loading" style="--chart-height: ${
+          this.chartHeight
+        }">
           <div class="column-chart__title">
             Total ${this.label}
             <a href="${this.link}" class="column-chart__link">View all</a>
           </div>
           <div class="column-chart__container">
-            <div data-element="header" class="column-chart__header">${this.value}</div>
+            <div data-element="header" class="column-chart__header">${
+              this.value
+            }</div>
             <div data-element="body" class="column-chart__chart">
-              ${this.spellingData()}
+              ${this.getColumnProps()}
             </div>
           </div>
         </div>
-      </div>
-    `
+    `;
   }
 
   render() {
-    const element = document.createElement('div');
+    const element = document.createElement("div");
     element.innerHTML = this.getTemplate();
     this.element = element.firstElementChild;
+
+    if (this.data.length) {
+      this.element.classList.remove("column-chart_loading");
+    }
+    this.subElements = this.getSubElements();
   }
 
-  update(data) {
+  getSubElements() {
+    const result = {};
+    let elements = this.element.querySelectorAll("[data-element]");
+
+    for (let subElement of elements) {
+      const elem = subElement.dataset.element;
+      result[elem] = subElement;
+    }
+    return result;
+  }
+
+  update(data = []) {
     this.data = data;
+    this.subElements.body.innerHTML = this.getColumnProps();
   }
 
   remove() {
-    this.element.remove();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 
   destroy() {
     this.remove();
+    this.subElements = {};
   }
-
 }
