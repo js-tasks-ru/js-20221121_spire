@@ -4,7 +4,7 @@ export default class ColumnChart {
   constructor({
     data = [],
     label = "",
-    value = "",
+    value = 0,
     link = "",
     formatHeading = (data) => data,
   } = {}) {
@@ -69,9 +69,9 @@ export default class ColumnChart {
 
   getSubElements() {
     const result = {};
-    let elements = this.element.querySelectorAll("[data-element]");
+    const elements = this.element.querySelectorAll("[data-element]");
 
-    for (let subElement of elements) {
+    for (const subElement of elements) {
       const elem = subElement.dataset.element;
       result[elem] = subElement;
     }

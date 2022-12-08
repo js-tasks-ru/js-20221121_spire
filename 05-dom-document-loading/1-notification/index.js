@@ -1,6 +1,6 @@
-const arrOfElems = [];
-
 export default class NotificationMessage {
+  static arrOfElems = [];
+
   constructor(text = "", { duration = 0, type = "" } = {}) {
     this.text = text;
     this.duration = duration;
@@ -22,8 +22,8 @@ export default class NotificationMessage {
   }
 
   render(targetElement) {
-    if (arrOfElems.length) {
-      arrOfElems.shift().remove();
+    if (NotificationMessage.arrOfElems.length) {
+      NotificationMessage.arrOfElems.shift().remove();
     }
 
     if (targetElement) {
@@ -36,7 +36,7 @@ export default class NotificationMessage {
 
     document.body.append(this.element);
 
-    arrOfElems.push(this.element);
+    NotificationMessage.arrOfElems.push(this.element);
     this.timer = setTimeout(this.destroy.bind(this), this.duration);
   }
 
@@ -45,7 +45,7 @@ export default class NotificationMessage {
       this.element.remove();
     }
   }
-
+  
   destroy() {
     this.remove();
     clearTimeout(this.timer);
