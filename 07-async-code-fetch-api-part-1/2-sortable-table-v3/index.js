@@ -172,25 +172,29 @@ export default class SortableTable {
     });
   }
 
+  showArrowAfterTarget(wrapper, event) {
+    const arrows = this.subElements.header.querySelectorAll(
+      ".sortable-table__sort-arrow"
+    );
+    Array.from(arrows).forEach((item) => item.remove());
+
+    wrapper.innerHTML = this.showSortArrow();
+    event.target.after(wrapper.firstElementChild);
+    wrapper.remove();
+  }
+
   onChangeSortOrderEvent() {
     const { header } = this.subElements;
     const that = this;
     let div = document.createElement("div");
 
-    header.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      const headerCell = e.target.parentElement.dataset;
-      if (headerCell.element) return;
+    header.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      const headerCell = event.target.parentElement.dataset;
+      if (!headerCell.id) return;
       if (headerCell.sortable === "false") return;
 
-      const arrows = this.subElements.header.querySelectorAll(
-        ".sortable-table__sort-arrow"
-      );
-      Array.from(arrows).forEach((item) => item.remove());
-
-      div.innerHTML = this.showSortArrow();
-      e.target.after(div.firstElementChild);
-      div.remove();
+      this.showArrowAfterTarget(div, event);
 
       headerCell.order =
         headerCell.order === "asc"
