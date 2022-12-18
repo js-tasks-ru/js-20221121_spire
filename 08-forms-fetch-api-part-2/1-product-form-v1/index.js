@@ -1,6 +1,3 @@
-import escapeHtml from "./utils/escape-html.js";
-import fetchJson from "./utils/fetch-json.js";
-
 const IMGUR_CLIENT_ID = "28aaa2e823b03b1";
 const BACKEND_URL = "https://course-js.javascript.ru";
 
@@ -9,7 +6,6 @@ export default class ProductForm {
 
   constructor(productId) {
     this.productId = productId;
-    // this.render();
   }
 
   async render() {
@@ -23,6 +19,8 @@ export default class ProductForm {
     this.element = div;
 
     root.append(this.element);
+
+    this.listeners();
 
     if (this.product) {
       this.update();
@@ -44,9 +42,6 @@ export default class ProductForm {
     this.categories = await respond.json();
   }
 
-  // id перадан?
-  // + вызвать
-  // - не вызывать
   update() {
     const {
       title,
@@ -122,9 +117,6 @@ export default class ProductForm {
   }
 
   productPhoto() {
-    // id передан?
-    // + создать imageContainer
-    // - вернуть пустую строку
     return `<div class="form-group form-group__wide" data-element="sortable-list-container">
               <label class="form-label">Фото</label>
               ${
@@ -147,7 +139,6 @@ export default class ProductForm {
     });
   }
 
-  // TODO: Разобраться с этим
   productCategory() {
     return `<div class="form-group form-group__half_left">
     <label class="form-label">Категория</label>
@@ -189,6 +180,26 @@ export default class ProductForm {
             </div>`;
   }
 
+  listeners() {
+    const button = document.querySelector("[name='save']");
+
+    button.addEventListener("product-saved", function () {
+      console.log("saved");
+    });
+    button.addEventListener("product-updated", function () {
+      console.log("update");
+    });
+
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (this.productId) {
+        button.dispatchEvent(new CustomEvent("product-updated"));
+      } else {
+        button.dispatchEvent(new CustomEvent("product-saved"));
+      }
+    });
+  }
+
   productSaveButton() {
     return `<div class="form-buttons">
               <button type="submit" name="save" class="button-primary-outline">
@@ -197,7 +208,13 @@ export default class ProductForm {
             </div>`;
   }
 
-  remove() {}
+  remove() {
+    if (this.element) {
+      this.element.remove();
+    }
+  }
 
-  destriy() {}
+  destriy() {
+    this.remove();
+  }
 }
