@@ -99,7 +99,10 @@ export default class ColumnChart {
   }
 
   update(from = this.range.from, to = this.range.to) {
-    fetchJson(`${BACKEND_URL}/${this.url}?from=${from}&to=${to}`)
+    const url = new URL(this.url, BACKEND_URL);
+    url.searchParams.set("from", from);
+    url.searchParams.set("to", to);
+    fetchJson(url)
       .then((result) => {
         this.data = Object.values(result);
         const sumOfData = this.data.reduce((sum, item) => sum + item);

@@ -28,17 +28,20 @@ export default class ProductForm {
   }
 
   async getProduct() {
-    const respond = await fetch(
-      `${BACKEND_URL}/api/rest/products?id=${this.productId}`
-    );
+    const url = new URL("products", `${BACKEND_URL}/api/rest/`);
+    url.searchParams.set("id", this.productId);
+
+    const respond = await fetch(url);
     const result = await respond.json();
     this.product = result[0];
   }
 
   async getCategories() {
-    const respond = await fetch(
-      `${BACKEND_URL}/api/rest/categories?_sort=weight&_refs=subcategory`
-    );
+    const url = new URL("categories", `${BACKEND_URL}/api/rest/`);
+    url.searchParams.set("_sort", "weight");
+    url.searchParams.set("_refs", "subcategory");
+
+    const respond = await fetch(url);
     this.categories = await respond.json();
   }
 
@@ -184,19 +187,18 @@ export default class ProductForm {
     const button = document.querySelector("[name='save']");
 
     button.addEventListener("product-saved", function () {
-      console.log("saved");
+      // console.log("saved");
     });
     button.addEventListener("product-updated", function () {
-      console.log("update");
+      // console.log("update");
     });
 
     button.addEventListener("click", (event) => {
       event.preventDefault();
-      if (this.productId) {
-        button.dispatchEvent(new CustomEvent("product-updated"));
-      } else {
-        button.dispatchEvent(new CustomEvent("product-saved"));
-      }
+
+      this.productId
+        ? button.dispatchEvent(new CustomEvent("product-updated"))
+        : button.dispatchEvent(new CustomEvent("product-saved"));
     });
   }
 
