@@ -13,18 +13,7 @@ export default class SortableTable {
     type: "",
   };
 
-  constructor(
-    headerConfig,
-    {
-      data = [],
-      // sorted = {},
-      sorted = {
-        id: headerConfig.find((item) => item.sortable).id,
-        order: "asc",
-      },
-      url = "",
-    } = {}
-  ) {
+  constructor(headerConfig, { data = [], sorted = {}, url = "" } = {}) {
     this.data = data;
     this.url = url;
     this.headerConfig = headerConfig;
@@ -218,30 +207,32 @@ export default class SortableTable {
     });
   }
 
-  getUrlParams() {
+  get urlRequest() {
+    const url = new URL(this.url, BACKEND_URL);
+    url.searchParams.set("_start", this.startIndex);
+    url.searchParams.set("_end", this.lastIndex);
+
     const defaultId = this.headerConfig.find((item) => item.sortable).id;
     const { id, order } = this.sortBy;
-    const sortType = `_sort=${id || defaultId}&_order=${order}`;
-    const numsOfItems = `&_start=${this.startIndex}&_end=${this.lastIndex}`;
 
-    return this.isSortOnClient ? numsOfItems : `${sortType}${numsOfItems}`;
+    if (!this.isSortOnClient) {
+      url.searchParams.set("_sort", id || defaultId);
+      url.searchParams.set("_order", order);
+      return url;
+    }
+    return url;
   }
 
-  requestOnServer() {
-    fetchJson(`${BACKEND_URL}/${this.url}?${this.getUrlParams()}`).then(
-      (result) => {
-        this.data = result.length ? result : "empty";
+  async requestOnServer() {
+    const result = await fetchJson(this.urlRequest);
+    this.data = result.length ? result : "empty";
+    this.update();
 
-        this.update();
-
-        if (!this.wasSorting) {
-          const lastElem = document.querySelector(".bottom-element");
-          this.infiniteObserver(lastElem);
-        }
-
-        this.wasSorting = false;
-      }
-    );
+    if (!this.wasSorting) {
+      const lastElem = document.querySelector(".bottom-element");
+      this.infiniteObserver(lastElem);
+    }
+    this.wasSorting = false;
   }
 
   update() {
